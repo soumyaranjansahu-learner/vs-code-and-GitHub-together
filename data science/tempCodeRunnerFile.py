@@ -14,3 +14,13 @@ print(df.isnull().sum())
 
 # 2. Check the balance (how many churned vs. stayed)
 print(df['Churn'].value_counts())
+
+# Check for missing values
+print(df.isnull().sum())
+
+# Fill missing numerical values with the median
+df['Tenure'] = df['Tenure'].fillna(df['Tenure'].median())
+
+# Drop columns that don't help (like ID numbers)
+# Replace 'CustomerID' with the actual ID column name from your terminal
+df = df.drop(['CustomerID'], axis=1)
