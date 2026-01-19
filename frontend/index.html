@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Telco Churn Dashboard</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; background-color: #f4f7f6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        .high-risk { color: white; background-color: #dc3545; padding: 4px 8px; border-radius: 4px; }
+        .low-risk { color: white; background-color: #28a745; padding: 4px 8px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Customer Churn Prediction</h1>
+        
+        <h3>Add New Customer</h3>
+        <input type="text" id="name" placeholder="Customer Name">
+        <input type="number" id="tenure" placeholder="Tenure (Months)">
+        <input type="number" id="charges" placeholder="Monthly Charges">
+        <button onclick="addCustomer()">Analyze Risk</button>
+
+        <hr>
+
+        <h3>Risk Analysis Dashboard</h3>
+        <table id="customerTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Tenure</th>
+                    <th>Risk Status</th>
+                    <th>Probability</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        // 1. Function to call Satya's Backend (Port 5000)
+        async function addCustomer() {
+            const name = document.getElementById('name').value;
+            const tenure = document.getElementById('tenure').value;
+            const charges = document.getElementById('charges').value;
+
+            const url = `http://127.0.0.1:5000/add-customer?name=${name}&tenure=${tenure}&monthly_charges=${charges}`;
+            
+            await fetch(url, { method: 'POST' });
+            loadDashboard(); // Refresh the table
+        }
+
+        // 2. Function to load the list from the database
+        async function loadDashboard() {
+            const response = await fetch('http://127.0.0.1:5000/get-all-customers');
+            const data = await response.json();
+            const tbody = document.querySelector('#customerTable tbody');
+            tbody.innerHTML = '';
+
+            data.forEach(c => {
+                const riskClass = c.risk_status === 'High Risk' ? 'high-risk' : 'low-risk';
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${c.name}</td>
+                        <td>${c.tenure}</td>
+                        <td><span class="${riskClass}">${c.risk_status}</span></td>
+                        <td>${(c.probability * 100).toFixed(1)}%</td>
+                    </tr>`;
+            });
+        }
+
+        // Load dashboard on page start
+        loadDashboard();
+    </script>
+</body>
+</html>
